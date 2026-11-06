@@ -32,6 +32,9 @@ export interface Group {
 }
 
 // ---------- Payloads (Client ➔ Server) ----------
+// ⚠️ ฟิลด์ระบุตัวตนใน payload (creator, username, sender) Server จะ "ไม่เชื่อ"
+//    Server ใช้ socket.data.username ที่ตั้งตอน register_user สำเร็จแทน (กันคนปลอมชื่อ)
+//    Client ยังส่งไปตามสัญญาเดิมได้ แต่ห้ามพึ่งค่าพวกนี้ฝั่ง Server
 
 export interface RegisterUserPayload {
   username: string;
@@ -77,6 +80,15 @@ export interface MarkReadPayload {
 }
 
 // ---------- Typed Socket.IO Event Maps ----------
+
+/**
+ * ข้อมูลที่ Server ผูกไว้กับแต่ละ socket (ใช้เฉพาะฝั่ง Server)
+ * new Server<ClientToServerEvents, ServerToClientEvents, {}, SocketData>()
+ */
+export interface SocketData {
+  /** ตั้งค่าเมื่อ register_user สำเร็จเท่านั้น — undefined = ยังไม่ login */
+  username?: string;
+}
 
 /** Event ที่ Server ส่งมาหา Client */
 export interface ServerToClientEvents {
