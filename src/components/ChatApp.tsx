@@ -20,7 +20,11 @@ export default function ChatApp({ username, sessionVersion, users, groups, onLog
   // Task 3.5 — ห้องที่กำลังเปิดอยู่
   const [activeRoom, setActiveRoom] = useState<ActiveRoom | null>(null);
   const activeRoomId = activeRoom?.id ?? null;
-  const { messages, unread, clearUnread } = useChatRoom(activeRoomId, username, sessionVersion);
+  const { messages, historyTruncated, unread, clearUnread } = useChatRoom(
+    activeRoomId,
+    username,
+    sessionVersion,
+  );
 
   const openRoom = (room: ActiveRoom) => {
     setActiveRoom(room);
@@ -70,6 +74,7 @@ export default function ChatApp({ username, sessionVersion, users, groups, onLog
               roomId={activeRoom.id}
               username={username}
               messages={messages}
+              historyTruncated={historyTruncated}
             />
           </>
         ) : (

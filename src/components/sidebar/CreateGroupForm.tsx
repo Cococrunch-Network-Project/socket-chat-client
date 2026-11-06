@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
-import { GROUPNAME_MAX, validateGroupName } from '../../lib/validation';
+import { GROUPNAME_MAX } from '../../lib/limits';
+import { validateGroupName } from '../../lib/validation';
 
 interface Props {
   existingNames: string[];

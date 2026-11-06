@@ -38,7 +38,9 @@ export default function RoomHeader({ room, users, groups, me }: Props) {
         #
       </span>
       <div className="min-w-0">
-        <h2 className="font-semibold text-slate-800">{room.groupName}</h2>
+        <h2 className="truncate font-semibold text-slate-800" title={room.groupName}>
+          {room.groupName}
+        </h2>
         <p className="truncate text-xs text-slate-500" title={members.join(', ')}>
           กลุ่ม · {members.length} สมาชิก:{' '}
           {members.map((m) => (m === me ? 'คุณ' : m)).join(', ')}

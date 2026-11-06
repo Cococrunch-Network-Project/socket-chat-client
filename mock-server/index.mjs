@@ -15,16 +15,50 @@ import { randomUUID } from 'node:crypto';
 const PORT = Number(process.env.PORT ?? 3001);
 const io = new Server(PORT, { cors: { origin: '*' }, maxHttpBufferSize: 1e7 });
 
+// ---- ข้อจำกัด (ตรงกับ src/lib/limits.ts) ----
+const USERNAME_MAX = 30;
+const GROUPNAME_MAX = 94;
+const MESSAGE_MAX = 4000;
+const FILE_MAX_BYTES = 7 * 1024 * 1024;
+const HISTORY_LIMIT = 50;
+const BLOCKED_EXT = /\.(html?|xhtml|shtml|m?js|cjs|jsx|svgz?)$/i;
+const BLOCKED_MIME = /^data:(text\/html|application\/xhtml\+xml|(text|application)\/(x-)?(java|ec)script|image\/svg\+xml)[;,]/i;
+
 // ---- เลียนแบบ models/User.ts ----
-const USERNAME_MAX = 20;
-/** รับภาษาไทยได้ ห้าม "_" (ใช้คั่นชื่อห้อง private) และห้ามช่องว่าง */
+/**
+ * 1–30 ตัว, ไทย/อังกฤษ/ตัวเลข/./- เท่านั้น, ห้าม "_" และช่องว่าง
+ * ต้องมีตัวอักษรหรือตัวเลข และห้ามขึ้นต้นด้วยสระ/วรรณยุกต์
+ */
 function isValidUsername(name) {
   return (
     typeof name === 'string' &&
-    name.length > 0 &&
+    name.length >= 1 &&
     name.length <= USERNAME_MAX &&
-    !/[_\s]/.test(name)
+    /^[\u0E01-\u0E3A\u0E40-\u0E4E\u0E50-\u0E59A-Za-z0-9.-]+$/.test(name) &&
+    /[\p{L}\p{N}]/u.test(name) &&
+    // oxlint-disable-next-line no-misleading-character-class -- ตั้งใจจับสระ/วรรณยุกต์ตัวเดียวที่ขึ้นต้นชื่อ
+    !/^[\u0E30-\u0E3A\u0E45\u0E47-\u0E4E]/.test(name)
   );
+}
+
+/** ขนาดไฟล์จริงจาก Base64 Data URL */
+function base64Bytes(dataUrl) {
+  const b64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
+  return Math.floor((b64.length * 3) / 4) - (b64.endsWith('==') ? 2 : b64.endsWith('=') ? 1 : 0);
+}
+
+function validateMessage(p) {
+  if (typeof p.content !== 'string' || !p.content) return 'ข้อความว่าง';
+  if (p.type === 'text') {
+    return p.content.length > MESSAGE_MAX ? `ข้อความเกิน ${MESSAGE_MAX} ตัวอักษร` : null;
+  }
+  if (p.type === 'image' || p.type === 'file') {
+    if (BLOCKED_EXT.test(p.fileName ?? '') || BLOCKED_MIME.test(p.content)) {
+      return 'ห้ามส่งไฟล์ HTML / JavaScript / SVG';
+    }
+    return base64Bytes(p.content) > FILE_MAX_BYTES ? 'ไฟล์เกิน 7MB' : null;
+  }
+  return 'type ไม่ถูกต้อง';
 }
 
 /** username -> socket.id */
@@ -64,7 +98,7 @@ io.on('connection', (socket) => {
     if (!isValidUsername(username)) {
       return reply({
         success: false,
-        error: `ชื่อต้องยาว 1–${USERNAME_MAX} ตัวอักษร และห้ามมี _ หรือช่องว่าง`,
+        error: `ชื่อต้องยาว 1–${USERNAME_MAX} ตัว ใช้ได้เฉพาะไทย/อังกฤษ/ตัวเลข/./- และห้ามขึ้นต้นด้วยสระหรือวรรณยุกต์`,
       });
     }
     if (me()) return reply({ success: false, error: 'การเชื่อมต่อนี้ลงทะเบียนชื่อไปแล้ว' });
@@ -83,7 +117,7 @@ io.on('connection', (socket) => {
 
   socket.on('create_group', (payload) => {
     const name = String(payload?.groupName ?? '').trim();
-    if (!me() || !name || groups.has(name)) return;
+    if (!me() || !name || name.length > GROUPNAME_MAX || groups.has(name)) return;
     groups.set(name, new Set([me()])); // R8: คนสร้างเป็นสมาชิกคนเดียว (ไม่ใช้ payload.creator)
     socket.join(`group_${name}`);
     console.log(`[create_group] ${name} by ${me()}`);
@@ -104,11 +138,13 @@ io.on('connection', (socket) => {
     const roomId = payload?.roomId;
     if (!me() || !canAccess(roomId, me())) return;
     socket.join(roomId);
-    socket.emit('chat_history', history.get(roomId) ?? []);
+    socket.emit('chat_history', (history.get(roomId) ?? []).slice(-HISTORY_LIMIT));
   });
 
   socket.on('send_message', (p) => {
     if (!me() || !canAccess(p?.roomId, me())) return;
+    const invalid = validateMessage(p);
+    if (invalid) return console.log(`[send_message rejected] ${me()}: ${invalid}`);
     const msg = {
       id: randomUUID(),
       roomId: p.roomId,

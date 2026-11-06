@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { HISTORY_LIMIT } from '../lib/limits';
 import { socket } from '../lib/socket';
 import type { Message } from '../types';
 
@@ -13,10 +14,12 @@ import type { Message } from '../types';
  * hook นี้ถูกใช้ใน ChatApp ที่มี key={username} → logout แล้ว state รีเซ็ตเอง
  */
 export function useChatRoom(activeRoomId: string | null, username: string, sessionVersion: number) {
-  const [room, setRoom] = useState<{ roomId: string | null; messages: Message[] }>({
-    roomId: null,
-    messages: [],
-  });
+  const [room, setRoom] = useState<{
+    roomId: string | null;
+    messages: Message[];
+    /** Server ส่งประวัติมาครบ HISTORY_LIMIT → อาจมีข้อความเก่ากว่านี้ที่ไม่ได้แสดง */
+    historyTruncated: boolean;
+  }>({ roomId: null, messages: [], historyTruncated: false });
   const [unread, setUnread] = useState<Record<string, number>>({});
   const activeRef = useRef(activeRoomId);
 
@@ -30,14 +33,14 @@ export function useChatRoom(activeRoomId: string | null, username: string, sessi
       const roomId = activeRef.current;
       // กันประวัติของห้องก่อนหน้าที่ตอบกลับมาช้า
       if (history.length > 0 && history[0].roomId !== roomId) return;
-      setRoom({ roomId, messages: history });
+      setRoom({ roomId, messages: history, historyTruncated: history.length >= HISTORY_LIMIT });
     };
 
     const onReceive = (msg: Message) => {
       if (msg.roomId === activeRef.current) {
         setRoom((prev) =>
           prev.roomId !== msg.roomId
-            ? { roomId: msg.roomId, messages: [msg] }
+            ? { roomId: msg.roomId, messages: [msg], historyTruncated: false }
             : prev.messages.some((m) => m.id === msg.id)
               ? prev
               : { ...prev, messages: [...prev.messages, msg] },
@@ -65,6 +68,8 @@ export function useChatRoom(activeRoomId: string | null, username: string, sessi
     });
   }, []);
 
-  const messages = room.roomId === activeRoomId ? room.messages : [];
-  return { messages, unread, clearUnread };
+  const isCurrent = room.roomId === activeRoomId;
+  const messages = isCurrent ? room.messages : [];
+  const historyTruncated = isCurrent && room.historyTruncated;
+  return { messages, historyTruncated, unread, clearUnread };
 }

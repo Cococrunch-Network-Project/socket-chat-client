@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { SOCKET_URL } from '../lib/socket';
-import { USERNAME_MAX, validateUsername } from '../lib/validation';
+import { USERNAME_MAX } from '../lib/limits';
+import { validateUsername } from '../lib/validation';
 
 interface Props {
   onLogin: (username: string) => void;
