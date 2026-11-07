@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useRef, useState } from 'react';
 import { socket } from '../lib/socket';
 import type { RegisterUserResponse } from '../types';
 
@@ -90,7 +90,7 @@ export function useSession() {
       setSessionVersion((v) => v + 1);
     } else {
       writeSaved(null);
-      setError(res.error ?? 'ชื่อนี้มีคนใช้แล้ว กรุณาตั้งชื่อใหม่');
+      setError(res.error ?? res.message ?? 'ชื่อนี้มีคนใช้แล้ว กรุณาตั้งชื่อใหม่');
     }
   }, []);
 
@@ -121,7 +121,7 @@ export function useSession() {
         usernameRef.current = null;
         writeSaved(null);
         setUsername(null);
-        setError(res.error ?? 'เชื่อมต่อใหม่ไม่สำเร็จ กรุณา login อีกครั้ง');
+        setError(res.error ?? res.message ?? 'เชื่อมต่อใหม่ไม่สำเร็จ กรุณา login อีกครั้ง');
       }
     };
     socket.on('connect', onReconnect);
@@ -132,3 +132,4 @@ export function useSession() {
 
   return { username, sessionVersion, error, loading, login, logout, savedName: readSaved() };
 }
+

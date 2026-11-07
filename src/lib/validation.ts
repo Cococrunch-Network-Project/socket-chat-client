@@ -72,17 +72,26 @@ export function validateMessageText(text: string): string | null {
  */
 export function validateFile(file: Pick<File, 'name' | 'size' | 'type'>): string | null {
   const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-  const mime = file.type.toLowerCase();
-  if (
-    (BLOCKED_EXTENSIONS as readonly string[]).includes(ext) ||
-    (BLOCKED_MIME_TYPES as readonly string[]).includes(mime)
-  ) {
+  const mime = (file.type || '').toLowerCase();
+
+  if ((BLOCKED_EXTENSIONS as readonly string[]).includes(ext)) {
     return 'ไม่อนุญาตให้ส่งไฟล์ HTML, JavaScript หรือ SVG';
   }
+
+  if ((BLOCKED_MIME_TYPES as readonly string[]).includes(mime)) {
+    return 'ไม่อนุญาตให้ส่งไฟล์ HTML, JavaScript หรือ SVG';
+  }
+
   if (file.size === 0) return 'ไฟล์ว่างเปล่า';
   if (file.size > FILE_MAX_BYTES) {
     const mb = (file.size / 1024 / 1024).toFixed(1);
     return `ไฟล์ใหญ่เกิน 7MB (ไฟล์นี้ ${mb}MB)`;
   }
+
+  const suspiciousSvg = ext === 'svg' || mime === 'image/svg+xml';
+  if (suspiciousSvg) {
+    return 'ไม่อนุญาตให้ส่งไฟล์ SVG';
+  }
+
   return null;
 }

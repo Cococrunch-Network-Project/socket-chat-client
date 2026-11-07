@@ -27,6 +27,12 @@ export default function GroupList({
   onJoin,
   onOpen,
 }: Props) {
+  // Keep the server's order within each section without mutating its list.
+  const orderedGroups = [
+    ...groups.filter((group) => group.members.includes(me)),
+    ...groups.filter((group) => !group.members.includes(me)),
+  ];
+
   return (
     <section>
       <h2 className="px-4 pb-2 pt-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
@@ -36,7 +42,7 @@ export default function GroupList({
       <CreateGroupForm existingNames={groups.map((g) => g.groupName)} onCreate={onCreate} />
 
       <ul className="space-y-0.5 px-2">
-        {groups.map((g) => {
+        {orderedGroups.map((g) => {
           const roomId = getGroupRoomId(g.groupName);
           const isMember = g.members.includes(me);
           const active = roomId === activeRoomId;
