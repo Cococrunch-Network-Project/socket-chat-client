@@ -1,9 +1,9 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useChatRoom } from '../hooks/useChatRoom';
 import { getGroupRoomId, getPrivateRoomId, type ActiveRoom } from '../lib/rooms';
 import { socket } from '../lib/socket';
 import type { Group } from '../types';
-import ChatPlaceholder from './ChatPlaceholder';
+import ChatWindow from './ChatWindow';
 import RoomHeader from './RoomHeader';
 import Sidebar from './sidebar/Sidebar';
 
@@ -50,7 +50,7 @@ export default function ChatApp({ username, sessionVersion, users, groups, onLog
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className={`chat-shell flex overflow-hidden ${activeRoom ? 'room-open' : ''}`}>
       <Sidebar
         me={username}
         users={users}
@@ -67,9 +67,9 @@ export default function ChatApp({ username, sessionVersion, users, groups, onLog
       <main className="flex min-w-0 flex-1 flex-col bg-slate-100">
         {activeRoom ? (
           <>
+            <button type="button" className="bg-white px-4 pt-3 text-left text-sm text-indigo-600 md:hidden" onClick={() => setActiveRoom(null)}>← กลับไปที่แชททั้งหมด</button>
             <RoomHeader room={activeRoom} users={users} groups={groups} me={username} />
-            {/* TODO คนที่ 4: แทนที่ด้วย <ChatWindow /> ที่รับ props ชุดเดียวกัน */}
-            <ChatPlaceholder
+            <ChatWindow
               key={activeRoom.id}
               roomId={activeRoom.id}
               username={username}
@@ -88,3 +88,4 @@ export default function ChatApp({ username, sessionVersion, users, groups, onLog
     </div>
   );
 }
+

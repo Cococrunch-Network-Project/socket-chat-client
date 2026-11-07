@@ -1,4 +1,4 @@
-import { getPrivateRoomId } from '../../lib/rooms';
+﻿import { getPrivateRoomId } from '../../lib/rooms';
 import { getInitial } from '../../lib/validation';
 import UnreadBadge from './Badge';
 
@@ -25,22 +25,23 @@ function Avatar({ name, self }: { name: string; self?: boolean }) {
 
 /** Task 3.3 — รายชื่อผู้ใช้ออนไลน์ทั้งหมด (R4) คลิกเพื่อแชทส่วนตัว (R7) */
 export default function UserList({ users, me, activeRoomId, unread, onOpenPrivate }: Props) {
-  const others = users.filter((u) => u !== me).sort();
+  const onlineUsers = [...new Set(users)].sort();
+  const others = onlineUsers.filter((u) => u !== me);
 
   return (
     <section>
       <h2 className="px-4 pb-1 pt-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
-        ออนไลน์ ({users.length})
+        ออนไลน์ ({onlineUsers.length})
       </h2>
       <ul className="space-y-0.5 px-2">
         {/* ตัวเอง — แสดงด้วยแต่คลิกไม่ได้ */}
-        <li className="flex items-center gap-3 rounded-lg px-2 py-2 text-slate-300">
+        {onlineUsers.includes(me) && <li className="flex items-center gap-3 rounded-lg px-2 py-2 text-slate-300">
           <Avatar name={me} self />
           <span className="truncate">{me}</span>
           <span className="rounded bg-indigo-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-300">
             คุณ
           </span>
-        </li>
+        </li>}
 
         {others.map((u) => {
           const roomId = getPrivateRoomId(me, u);
@@ -68,3 +69,4 @@ export default function UserList({ users, me, activeRoomId, unread, onOpenPrivat
     </section>
   );
 }
+

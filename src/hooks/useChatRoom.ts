@@ -50,9 +50,19 @@ export function useChatRoom(activeRoomId: string | null, username: string, sessi
       }
     };
 
+    const onRead = (payload: { roomId: string; username: string }) => {
+      setRoom((prev) => prev.roomId !== payload.roomId ? prev : {
+        ...prev,
+        messages: prev.messages.map((message) => message.sender === payload.username || message.readBy?.includes(payload.username)
+          ? message : { ...message, readBy: [...(message.readBy ?? []), payload.username] }),
+      });
+    };
+
+    socket.on('messages_read', onRead);
     socket.on('chat_history', onHistory);
     socket.on('receive_message', onReceive);
     return () => {
+      socket.off('messages_read', onRead);
       socket.off('chat_history', onHistory);
       socket.off('receive_message', onReceive);
     };

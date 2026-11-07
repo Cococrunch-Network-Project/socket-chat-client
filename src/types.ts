@@ -1,4 +1,4 @@
-/**
+﻿/**
  * types.ts — สัญญา Socket Events กลางของทีม (API Contract)
  * อ้างอิง: Project Master Plan หัวข้อ 4
  *
@@ -43,6 +43,7 @@ export interface RegisterUserPayload {
 /** [TBD] รูปแบบ callback ของ register_user — แผนไม่ได้ระบุ */
 export interface RegisterUserResponse {
   success: boolean;
+  message?: string;
   error?: string;
 }
 
@@ -115,3 +116,4 @@ export interface ClientToServerEvents {
   typing: (payload: TypingPayload) => void;
   mark_read: (payload: MarkReadPayload) => void;
 }
+
