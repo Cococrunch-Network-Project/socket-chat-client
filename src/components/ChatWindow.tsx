@@ -215,7 +215,7 @@ export default function ChatWindow({ roomId, username, messages, historyTruncate
           <textarea ref={inputRef} rows={1} value={text} aria-label="ข้อความ" placeholder="พิมพ์ข้อความ หรือ @ai เพื่อถามผู้ช่วย…" onChange={(event) => { setText(event.target.value); setError(null); updateTyping(event.target.value); }} onBlur={stopTyping} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />
           <button type="submit" className="send-button" aria-label="ส่งข้อความ" title="ส่งข้อความ" disabled={!connected || preparing || (!text.trim() && !attachment) || text.length > MESSAGE_MAX}><Icon name="send" /></button>
         </div>
-        <div className="composer-hint"><span>Shift + Enter ขึ้นบรรทัดใหม่ <span className="file-limit">· ไฟล์สูงสุด 7 MB</span></span><span className={text.length > MESSAGE_MAX ? 'over-limit' : ''}>{text.length > MESSAGE_MAX * .9 ? `${text.length.toLocaleString()} / ${MESSAGE_MAX.toLocaleString()}` : '✦ @ai หรือ /ask'}</span></div>
+        <div className="composer-hint"><span>Shift + Enter ขึ้นบรรทัดใหม่ <span className="file-limit">· ไฟล์สูงสุด 7 MB</span></span><span className={text.length > MESSAGE_MAX ? 'over-limit' : ''}>{text.length > MESSAGE_MAX * .9 ? `${text.length.toLocaleString()} / ${MESSAGE_MAX.toLocaleString()}` : '✦ @ai'}</span></div>
       </form>
     </div>
   );
