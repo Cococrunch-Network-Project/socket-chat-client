@@ -84,8 +84,8 @@ export function validateFile(file: Pick<File, 'name' | 'size' | 'type'>): string
 
   if (file.size === 0) return 'ไฟล์ว่างเปล่า';
   if (file.size > FILE_MAX_BYTES) {
-    const mb = (file.size / 1024 / 1024).toFixed(1);
-    return `ไฟล์ใหญ่เกิน 7MB (ไฟล์นี้ ${mb}MB)`;
+    const mb = (file.size / 1_000_000).toFixed(2);
+    return `ไฟล์ใหญ่เกิน ${FILE_MAX_BYTES / 1_000_000} MB (ไฟล์นี้ ${mb} MB)`;
   }
 
   const suspiciousSvg = ext === 'svg' || mime === 'image/svg+xml';
