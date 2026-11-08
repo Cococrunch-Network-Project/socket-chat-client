@@ -173,7 +173,7 @@ export default function ChatWindow({ roomId, username, messages, historyTruncate
             const previous = messages[index - 1];
             const newDay = !previous || dayLabel(previous.timestamp) !== dayLabel(message.timestamp);
             const mine = message.sender === username;
-            const ai = message.sender === 'AI Assistant';
+            const ai = message.type === 'ai' || message.sender === 'AI Assistant';
             const readers = (message.readBy ?? []).filter((name) => name !== username && name !== message.sender);
             const grouped = !newDay && previous?.sender === message.sender && Number(new Date(message.timestamp)) - Number(new Date(previous.timestamp)) < 300000;
             const image = message.type === 'image' && /^data:image\/(png|jpe?g|gif|webp|avif|bmp);base64,/i.test(message.content);
@@ -184,7 +184,7 @@ export default function ChatWindow({ roomId, username, messages, historyTruncate
                 <div className="message-stack">
                   {!mine && !grouped && <div className="message-author">{message.sender}{ai && <span className="ai-tag">AI</span>}</div>}
                   <div className="message-bubble">
-                    {message.type === 'text' ? <p>{message.content}</p> : <>
+                    {message.type === 'text' || message.type === 'ai' ? <p>{message.content}</p> : <>
                       {image && <img className="message-image" src={message.content} alt={message.fileName ?? 'รูปภาพที่แชร์'} onLoad={() => { if (nearBottom.current) toBottom(); }} />}
                       {message.content.startsWith('data:') && <a className="file-card" href={message.content} download={message.fileName ?? 'download'}><Icon name="file" /><span><strong>{message.fileName ?? 'ไฟล์แนบ'}</strong><small>ดาวน์โหลด{image ? 'รูปภาพ' : 'ไฟล์'} ↓</small></span></a>}
                     </>}
@@ -200,7 +200,6 @@ export default function ChatWindow({ roomId, username, messages, historyTruncate
         </div>
       </div>
       {away && <button className="jump-latest" onClick={toBottom}>ข้อความล่าสุด ↓</button>}
-      <div className="typing-slot" role="status" aria-live="polite">{typingUsers.length > 0 && <><span className="typing-dots" aria-hidden="true"><i /><i /><i /></span><span>{typingUsers.slice(0, 2).join(', ')}{typingUsers.length > 2 ? ` และอีก ${typingUsers.length - 2} คน` : ''} กำลังพิมพ์</span></>}</div>
       <form onSubmit={send} className="composer-area">
         {!connected && <p className="connection-note" role="status">กำลังเชื่อมต่อใหม่… ข้อความร่างของคุณยังอยู่</p>}
         {error && <p className="composer-error" role="alert">{error}<button type="button" aria-label="ปิดข้อความแจ้งเตือน" onClick={() => setError(null)}><Icon name="close" /></button></p>}
@@ -209,6 +208,7 @@ export default function ChatWindow({ roomId, username, messages, historyTruncate
           <div><strong>{attachment?.file.name ?? 'กำลังเตรียมไฟล์…'}</strong><small>{attachment ? `${formatSize(attachment.file.size)} · พร้อมส่ง` : 'กำลังอ่านไฟล์'}</small></div>
           <button type="button" className="icon-button" aria-label="นำไฟล์แนบออก" onClick={() => { readerRef.current?.abort(); setPreparing(false); setAttachment(null); }}><Icon name="close" /></button>
         </div>}
+        <div className="typing-slot" role="status" aria-live="polite">{typingUsers.length > 0 && <><span className="typing-dots" aria-hidden="true"><i /><i /><i /></span><span>{typingUsers.slice(0, 2).join(', ')}{typingUsers.length > 2 ? ` และอีก ${typingUsers.length - 2} คน` : ''} กำลังพิมพ์</span></>}</div>
         <div className="composer">
           <input ref={fileRef} type="file" hidden onChange={(event) => { selectFile(event.target.files?.[0]); event.target.value = ''; }} />
           <button type="button" className="icon-button attach-button" aria-label="แนบรูปภาพหรือไฟล์" title={`แนบรูปภาพหรือไฟล์ · สูงสุด ${formatSize(FILE_MAX_BYTES)}`} disabled={preparing} onClick={() => fileRef.current?.click()}><Icon name="attach" /></button>
