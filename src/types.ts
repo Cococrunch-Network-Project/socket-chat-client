@@ -10,7 +10,9 @@
 
 // ---------- Data Models ----------
 
-export type MessageType = 'text' | 'image' | 'file';
+export type MessageType = 'text' | 'image' | 'file' | 'ai';
+/** AI replies are server-generated, never a client-sendable message type. */
+export type UserMessageType = Exclude<MessageType, 'ai'>;
 
 export interface Message {
   id: string;
@@ -64,7 +66,7 @@ export interface JoinRoomPayload {
 export interface SendMessagePayload {
   roomId: string;
   sender: string;
-  type: MessageType;
+  type: UserMessageType;
   content: string;
   fileName?: string;
 }

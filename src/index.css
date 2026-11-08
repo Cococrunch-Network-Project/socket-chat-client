@@ -54,7 +54,7 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 3px s
 .file-card strong { display: block; overflow-wrap: anywhere; font-size: 13px; font-weight: 500; }
 .file-card small { display: block; font-size: 11px; opacity: .75; }
 .file-card:hover small { text-decoration: underline; }
-.typing-slot { min-height: 30px; display: flex; align-items: center; gap: 9px; padding: 0 32px; color: #7a8499; font-size: 11px; }
+.typing-slot { min-height: 36px; display: flex; align-items: center; gap: 9px; padding: 0 12px; color: #65738a; font-size: var(--chat-label-size); }
 .typing-slot > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .typing-dots { display: flex; gap: 3px; flex-shrink: 0; }
 .typing-dots i { width: 4px; height: 4px; border-radius: 50%; background: #8c86ce; animation: typing 1.2s infinite ease-in-out; }
@@ -96,7 +96,6 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 3px s
 .chat-shell main > header p { font-size: var(--chat-label-size); }
 .history-note, .date-divider, .file-card small, .attachment-preview small, .jump-latest { font-size: var(--chat-detail-size); }
 .file-card strong, .attachment-preview strong, .composer-error, .connection-note, .chat-empty p { font-size: var(--chat-label-size); }
-.typing-slot { min-height: 36px; font-size: var(--chat-label-size); color: #65738a; }
 .ai-tag { font-size: var(--chat-detail-size); }
 @media (max-width: 767px) {
   .chat-shell { padding: 0; }
@@ -108,7 +107,6 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 3px s
   .message-stack { max-width: min(84%, calc(100% - var(--chat-avatar-size) - 10px)); }
   .mine .message-stack { max-width: 84%; }
   .composer-area { padding-inline: 12px; }
-  .typing-slot { padding-inline: 20px; }
   .file-limit { display: none; }
   .chat-shell main > header { padding-inline: 16px; }
 }
